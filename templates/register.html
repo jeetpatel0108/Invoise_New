@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Invoice App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <style>
+        body.page-register {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        h2 { text-align: center; margin-top: 0; }
+        label {
+            display: block;
+            font-size: 13px;
+            color: #444;
+            margin: 10px 0 4px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            background: #1565C0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        button:hover { background: #0d47a1; }
+        .error { color: #c62828; text-align: center; font-size: 14px; }
+        .link { text-align: center; margin-top: 14px; }
+        .link a { color: #1565C0; }
+        .hint { font-size: 11px; color: #666; margin-top: 2px; }
+        input.invalid { border-color: #c62828; }
+    </style>
+</head>
+<body class="page-register">
+<div class="box">
+    <h2>Register Your Shop</h2>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" onsubmit="return validateRegisterForm(this)" novalidate>
+        <label for="u">Username *</label>
+        <input type="text" id="u" name="u" placeholder="Letters, numbers, underscore" required
+               pattern="[a-zA-Z0-9_]{3,20}" title="3-20 characters, no spaces">
+
+        <label for="p">Password *</label>
+        <input type="password" id="p" name="p" placeholder="Min 6 characters" required minlength="6">
+
+        <label for="sn">Shop Name *</label>
+        <input type="text" id="sn" name="sn" placeholder="Your shop name" required
+               oninput="alphanumericSpace(this)">
+
+        <label for="on">Owner Name *</label>
+        <input type="text" id="on" name="on" placeholder="Owner full name" required
+               oninput="lettersOnly(this)" pattern="[a-zA-Z\s]{2,50}">
+
+        <label for="a">Address *</label>
+        <input type="text" id="a" name="a" placeholder="Shop address" required minlength="5">
+
+        <label for="c">City *</label>
+        <input type="text" id="c" name="c" placeholder="City (letters only)" required
+               oninput="lettersOnly(this)" pattern="[a-zA-Z\s]{2,50}">
+
+        <label for="ph">Phone Number *</label>
+        <input type="tel" id="ph" name="ph" placeholder="10 digit mobile" required
+               inputmode="numeric" maxlength="12" oninput="digitsOnly(this)">
+        <p class="hint">Numbers only — no letters. Example: 9876543210</p>
+
+        <label for="g">GST Number (optional)</label>
+        <input type="text" id="g" name="g" placeholder="GSTIN" maxlength="15">
+
+        <button type="submit">Register</button>
+    </form>
+
+    <div class="link">
+        <a href="{{ url_for('login') }}">Already have an account? Login</a>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='forms.js') }}"></script>
+</body>
+</html>

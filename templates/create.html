@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Professional Invoice</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <style>
+        :root {
+            --bg: #f3f7f6;
+            --card: #ffffff;
+            --primary: #1f7a43;
+            --primary-dark: #175c32;
+            --muted: #607079;
+            --line: #d7e1dd;
+            --soft: #eef6f2;
+            --blue: #2563eb;
+            --blue-dark: #1d4ed8;
+        }
+        * { box-sizing: border-box; }
+        body.page-create {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: #1d2b32;
+            padding: 22px;
+        }
+        .container {
+            background: var(--card);
+            margin: 0 auto;
+            width: 100%;
+            max-width: 760px;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(20, 56, 41, 0.12);
+            padding: 30px;
+        }
+        h2 {
+            margin: 0 0 20px;
+            color: var(--primary);
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            width: 100%;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 640px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        input, .field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: 14px;
+            background: #fff;
+        }
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(31, 122, 67, 0.15);
+        }
+        h3 {
+            color: var(--primary);
+            margin: 14px 0 12px;
+        }
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            background: var(--soft);
+            border: 1px solid #dbe9e3;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 640px) {
+            .item-row { grid-template-columns: 1fr; }
+        }
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .actions {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .add-btn {
+            background-color: var(--blue);
+            color: white;
+        }
+        .add-btn:hover { background-color: var(--blue-dark); }
+        .submit-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+        .submit-btn:hover { background-color: var(--primary-dark); }
+        .top-link {
+            display: inline-block;
+            margin-bottom: 10px;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .top-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body class="page-create">
+<div class="container">
+    <a href="/" class="top-link">Back to Dashboard</a>
+    <h2>Create Invoice</h2>
+    <form method="POST">
+        <div class="grid">
+            <div>
+                <label>Customer Name</label>
+                <input name="cus_n" placeholder="Customer Name" required>
+            </div>
+            <div>
+                <label>WhatsApp Number</label>
+                <input name="cus_ph" placeholder="91XXXXXXXXXX" required>
+            </div>
+            <div>
+                <label>Invoice Date</label>
+                <input type="date" name="date" required>
+            </div>
+            <div>
+                <label>Customer Address</label>
+                <input name="cus_addr" placeholder="Customer Address" required>
+            </div>
+            <div>
+                <label>Authorized Signatory</label>
+                <input name="auth" placeholder="Authorized Person">
+            </div>
+            <div>
+                <label>Payment Mode</label>
+                <select name="payment_mode" id="payment_mode" onchange="togglePaymentReference()" required>
+                    <option value="CASH">💵 CASH</option>
+                    <option value="ONLINE">💳 ONLINE</option>
+                </select>
+            </div>
+            <div id="payment_ref_container" style="display:none;">
+                <label>Payment Reference</label>
+                <input name="payment_reference" id="payment_reference" placeholder="Transaction ID / UPI Reference">
+            </div>
+        </div>
+        <h3>Items</h3>
+        <div id="items-container">
+            <div class="item-row">
+                <input name="item_n[]" placeholder="Item Name" required>
+                <input type="number" min="1" name="item_q[]" placeholder="Quantity" required>
+                <input type="number" step="0.01" name="item_p[]" placeholder="Price" required>
+            </div>
+        </div>
+        <div class="actions">
+            <button type="button" class="add-btn" onclick="addItem()">+ Add More Items</button>
+            <button type="submit" class="submit-btn">Generate Invoice</button>
+        </div>
+    </form>
+</div>
+<script>
+function togglePaymentReference() {
+    const mode = document.getElementById("payment_mode").value;
+    const container = document.getElementById("payment_ref_container");
+    container.style.display = mode === "ONLINE" ? "block" : "none";
+}
+
+function addItem() {
+    const container = document.getElementById("items-container");
+    const div = document.createElement("div");
+    div.className = "item-row";
+    div.innerHTML = `
+        <input name="item_n[]" placeholder="Item Name" required>
+        <input type="number" min="1" name="item_q[]" placeholder="Quantity" required>
+        <input type="number" step="0.01" name="item_p[]" placeholder="Price" required>
+    `;
+    container.appendChild(div);
+}
+</script>
+</body>
+</html>

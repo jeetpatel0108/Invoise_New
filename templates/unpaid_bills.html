@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Tracking - Unpaid Bills</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <style>
+        :root {
+            --bg: #f3f7f6;
+            --card: #ffffff;
+            --primary: #1f7a43;
+            --primary-dark: #175c32;
+            --danger: #d14343;
+            --warning: #f57c00;
+            --success: #2e7d32;
+            --muted: #607079;
+            --line: #e5ece9;
+        }
+        * { box-sizing: border-box; }
+        body.page-payments {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: #1d2b32;
+            padding: 22px;
+            background: var(--bg);
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 12px 40px rgba(20, 56, 41, 0.12);
+        }
+        h1 {
+            margin: 0 0 6px;
+            color: var(--primary);
+            font-size: 1.9rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        @media (max-width: 700px) {
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        .stat {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            background: #fafdff;
+        }
+        .stat .label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .stat .value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #123b21;
+        }
+        .stat.unpaid { border-left: 4px solid var(--danger); }
+        .stat.paid { border-left: 4px solid var(--success); }
+        
+        .filters {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 12px 40px rgba(20, 56, 41, 0.12);
+        }
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .filter-group input,
+        .filter-group select {
+            padding: 8px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .filter-btn {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .bills-table {
+            background: var(--card);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(20, 56, 41, 0.12);
+            margin-bottom: 20px;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+        }
+        th {
+            background: #eef6f2;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        td {
+            font-size: 14px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-paid {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+        .status-unpaid {
+            background: #ffebee;
+            color: var(--danger);
+        }
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .mode-badge.cash {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .action-btn:hover {
+            background: var(--primary-dark);
+        }
+        .action-btn-toggle {
+            background: var(--warning);
+        }
+        .action-btn-toggle:hover {
+            background: #e65100;
+        }
+        
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(20, 56, 41, 0.12);
+        }
+        .total {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .back-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+        .empty-state p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="page-payments">
+    <div class="container">
+        <div class="header">
+            <h1>💳 Payment Tracking</h1>
+            <p style="margin: 0; color: var(--muted);">Track and manage your bills' payment status</p>
+            
+            <div class="stats">
+                <div class="stat unpaid">
+                    <div class="label">Unpaid Bills</div>
+                    <div class="value">{{ unpaid_bill_count }}</div>
+                </div>
+                <div class="stat unpaid">
+                    <div class="label">Unpaid Amount</div>
+                    <div class="value">₹{{ "%.2f"|format(total_unpaid) }}</div>
+                </div>
+                <div class="stat paid">
+                    <div class="label">Paid Bills</div>
+                    <div class="value">{{ paid_bill_count }}</div>
+                </div>
+                <div class="stat paid">
+                    <div class="label">Paid Amount</div>
+                    <div class="value">₹{{ "%.2f"|format(total_paid) }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="filters">
+            <h3 style="margin-top: 0; color: var(--primary);">Search & Filter</h3>
+            <form method="GET" action="{{ url_for('unpaid_bills') }}">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Bills</option>
+                            <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Paid Only</option>
+                            <option value="unpaid" {% if status_filter == 'unpaid' %}selected{% endif %}>Unpaid Only</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Bill Number</label>
+                        <input type="text" name="bill" placeholder="e.g., INV-20250521" value="{{ bill_filter }}">
+                    </div>
+                    <div class="filter-group">
+                        <label>Customer Name</label>
+                        <input type="text" name="customer" placeholder="Customer name" value="{{ customer_filter }}">
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>From Date</label>
+                        <input type="date" name="date_from" value="{{ date_from }}">
+                    </div>
+                    <div class="filter-group">
+                        <label>To Date</label>
+                        <input type="date" name="date_to" value="{{ date_to }}">
+                    </div>
+                </div>
+                <div class="filter-btn">
+                    <button type="submit" class="btn btn-primary">🔍 Search</button>
+                    <a href="{{ url_for('unpaid_bills') }}" class="btn btn-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+        
+        {% if bills %}
+        <div class="bills-table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Bill No</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Mode</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in bills %}
+                    <tr>
+                        <td><strong>{{ (bill[1] if bill[1] else bill[0]) | short_bill }}</strong></td>
+                        <td>{{ bill[2] }}</td>
+                        <td>₹{{ "%.2f"|format(bill[3]) }}</td>
+                        <td>{{ bill[4] }}</td>
+                        <td>
+                            <span class="mode-badge {% if bill[5] == 'CASH' %}cash{% endif %}">
+                                {{ bill[5] }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ bill[6]|lower }}">
+                                {{ bill[6] }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('mark_paid', bill_id=bill[0]) }}" style="display:inline;">
+                                <button type="submit" class="action-btn action-btn-toggle">
+                                    {% if bill[6] == 'PAID' %}Mark Unpaid{% else %}Mark Paid{% endif %}
+                                </button>
+                            </form>
+                            <a href="{{ url_for('download', id=bill[0]) }}" class="action-btn" title="Download PDF">PDF</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <div class="total">
+                Total Unpaid: <span style="color: var(--danger);">₹{{ "%.2f"|format(total_unpaid) }}</span>
+            </div>
+            <a href="/" class="back-link">← Back to Dashboard</a>
+        </div>
+        {% else %}
+        <div class="bills-table">
+            <div class="empty-state">
+                <p>📭 No bills found matching your filters</p>
+                <a href="{{ url_for('unpaid_bills') }}" class="back-link">Clear filters</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

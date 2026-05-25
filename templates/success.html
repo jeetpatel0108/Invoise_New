@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Created</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <style>
+        :root {
+            --bg: #f3f7f6;
+            --card: #ffffff;
+            --primary: #1f7a43;
+            --primary-dark: #175c32;
+        }
+        * { box-sizing: border-box; }
+        body.page-success {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+        }
+        .card {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card);
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(20, 56, 41, 0.12);
+            padding: 34px;
+            text-align: center;
+        }
+        h2 {
+            margin: 0 0 8px;
+            color: var(--primary);
+        }
+        p {
+            margin: 0 0 18px;
+            color: #5f6d74;
+        }
+        .actions {
+            display: grid;
+            gap: 10px;
+        }
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            background: var(--primary);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-blue { background: #2563eb; }
+        .btn-blue:hover { background: #1d4ed8; }
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 1px solid #bdd5c7;
+        }
+        .btn-outline:hover {
+            background: #eef6f2;
+        }
+        .navbar {
+            background: var(--primary);
+            padding: 0;
+            margin: 0 -20px 20px -20px;
+            display: flex;
+            gap: 0;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .navbar a, .navbar form {
+            flex: 1;
+            text-align: center;
+            color: white;
+            text-decoration: none;
+            padding: 14px 12px;
+            font-weight: 600;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .navbar a:hover, .navbar form:hover {
+            background: var(--primary-dark);
+        }
+        .navbar form {
+            padding: 0;
+        }
+        .navbar button {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 14px 12px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .navbar button:hover {
+            background: var(--primary-dark);
+        }
+        .navbar form:last-child button {
+            background: #d14343;
+        }
+        .navbar form:last-child button:hover {
+            background: #b63535;
+        }
+    </style>
+</head>
+<body class="page-success">
+    <div class="navbar">
+        <a href="/">🏠 Home</a>
+        <a href="/create">➕ Create Invoice</a>
+        <a href="/invoices">📋 View Invoices</a>
+        <a href="/unpaid-bills">💳 Payment Tracking</a>
+        <form method="POST" action="/logout" style="flex: 1; margin: 0;">
+            <button type="submit">🚪 Logout</button>
+        </form>
+    </div>
+    <main class="card">
+        <h2>Invoice Created Successfully</h2>
+        <p>Bill No <strong>{{ bill_number | short_bill }}</strong> is ready. You can download or share it now.</p>
+        <div class="actions">
+            <a href="/download/{{ inv_id }}" class="btn">Download PDF</a>
+            <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-blue">Share on WhatsApp</a>
+            <a href="/" class="btn btn-outline">Back Home</a>
+        </div>
+    </main>
+</body>
+</html>

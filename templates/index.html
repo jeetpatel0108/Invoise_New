@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - Invoice System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <style>
+        :root {
+            --bg: #f3f7f6;
+            --card: #ffffff;
+            --primary: #1f7a43;
+            --primary-dark: #175c32;
+            --muted: #607079;
+            --danger: #d14343;
+            --line: #e5ece9;
+            --radius: 14px;
+        }
+        * { box-sizing: border-box; }
+        body.page-dashboard {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: #1d2b32;
+            padding: 20px;
+        }
+        .card {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 34px;
+            box-shadow: 0 12px 40px rgba(20, 56, 41, 0.12);
+        }
+        h1 {
+            margin: 0 0 6px;
+            color: var(--primary);
+            font-size: 1.9rem;
+        }
+        .subtitle {
+            margin: 0 0 22px;
+            color: var(--muted);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 700px) {
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 500px) {
+            .stats { grid-template-columns: 1fr; }
+        }
+        .stat {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            background: #fafdff;
+        }
+        .stat .label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .stat .value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #123b21;
+        }
+        .actions {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 18px;
+        }
+        @media (max-width: 700px) {
+            .actions { grid-template-columns: 1fr; }
+        }
+        .btn {
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+        .btn-primary { background: var(--primary); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: #2563eb; }
+        .btn-secondary:hover { background: #1d4ed8; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #b63535; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border-bottom: 1px solid var(--line);
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th { color: var(--muted); font-weight: 600; }
+    </style>
+</head>
+<body class="page-dashboard">
+    <main class="card">
+        <h1>{{ shop_name }}</h1>
+        <p class="subtitle">Owner: {{ owner_name }}</p>
+
+        <section class="stats">
+            <div class="stat">
+                <div class="label">Today's Bill Count</div>
+                <div class="value">{{ daily_bill_count }}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Today's Bill Amount</div>
+                <div class="value">{{ "%.2f"|format(daily_bill_amount) }}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Total Bills</div>
+                <div class="value">{{ total_bill_count }}</div>
+            </div>
+            <div class="stat">
+                <div class="label">All Bills Total Amount</div>
+                <div class="value">{{ "%.2f"|format(total_bill_amount) }}</div>
+            </div>
+        </section>
+        
+        <section class="stats" style="margin-top: 20px;">
+            <div class="stat" style="border-left: 4px solid #2e7d32;">
+                <div class="label">Paid Bills</div>
+                <div class="value" style="color: #2e7d32;">{{ paid_bill_count }}</div>
+                <div class="label" style="font-size: 11px; color: #2e7d32;">₹{{ "%.2f"|format(paid_bill_amount) }}</div>
+            </div>
+            <div class="stat" style="border-left: 4px solid #d14343;">
+                <div class="label">Unpaid Bills</div>
+                <div class="value" style="color: #d14343;">{{ unpaid_bill_count }}</div>
+                <div class="label" style="font-size: 11px; color: #d14343;">₹{{ "%.2f"|format(unpaid_bill_amount) }}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Total Paid %</div>
+                <div class="value">{% if total_bill_amount > 0 %}{{ "%.1f"|format((paid_bill_amount / total_bill_amount) * 100) }}%{% else %}0%{% endif %}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Outstanding</div>
+                <div class="value" style="color: #d14343;">₹{{ "%.2f"|format(unpaid_bill_amount) }}</div>
+            </div>
+        </section>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Bill No.</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in recent_bills %}
+                <tr>
+                    <td>{{ (bill[4] if bill[4] else bill[0]) | short_bill }}</td>
+                    <td>{{ bill[1] }}</td>
+                    <td>{{ bill[2] }}</td>
+                    <td>{{ "%.2f"|format(bill[3]) }}</td>
+                    <td>
+                        <span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;
+                        {% if bill[5] == 'PAID' %}
+                            background: #e8f5e9; color: #2e7d32;
+                        {% else %}
+                            background: #ffebee; color: #d14343;
+                        {% endif %}
+                        ">{{ bill[5] }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not recent_bills %}
+                <tr>
+                    <td colspan="5">No bills yet. Create your first invoice.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="actions">
+            <a href="/create" class="btn btn-primary">Create New Invoice</a>
+            <a href="/unpaid-bills" class="btn btn-secondary">💳 Payment Tracking</a>
+            <a href="/invoices" class="btn btn-secondary">View Invoice History</a>
+            <a href="/logout" class="btn btn-danger">Logout</a>
+        </div>
+    </main>
+</body>
+</html>

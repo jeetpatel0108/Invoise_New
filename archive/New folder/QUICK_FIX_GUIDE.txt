@@ -1,0 +1,119 @@
+📋 INVOICE SYSTEM - QUICK FIXES REFERENCE
+==========================================
+
+✅ TWO MAJOR ISSUES FIXED:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  FORGOT PASSWORD - OTP DELIVERY
+   ✓ OTP now properly sent to registered mobile number
+   ✓ OTP valid for 10 minutes (600 seconds)
+   ✓ Max 5 wrong attempts before resetting
+   ✓ SMS via Fast2SMS (or demo mode if no API key)
+   
+   What changed:
+   - Database table: password_otp (stores OTP with hash)
+   - Route: /forgot-password/send (sends OTP)
+   - Route: /forgot-password/verify (verifies OTP)
+   - Route: /forgot-password/reset (resets password)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2️⃣  BILL NUMBERING - SEQUENTIAL & UNIQUE
+   ✓ Each bill gets unique number: INV-YYYYMMDD-XXX-YYYY
+   ✓ Not just "Invoice #1" anymore
+   ✓ Easy to identify and reference
+   
+   Examples:
+   User 1, May 21 → INV-20250521-001-0001
+   User 1, May 21 → INV-20250521-001-0002 (next bill same day)
+   User 1, May 22 → INV-20250521-001-0001 (resets per day)
+   User 2, May 21 → INV-20250521-002-0001 (different user)
+   
+   What changed:
+   - Database: Added bill_number column to invoices table
+   - Function: generate_bill_number() creates unique numbers
+   - PDF: Shows "Bill No: INV-20250521-001-0001"
+   - Dashboard: Shows bill numbers instead of IDs
+   - Invoice History: Shows bill numbers
+   - Success Page: Shows "Bill No INV-..."
+   - WhatsApp: Uses bill number in message
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 FILES MODIFIED:
+
+   ✎ app.py
+     • init_db() - Added bill_number column
+     • generate_bill_number() - New function
+     • /create route - Generate bill_number
+     • /download route - Display bill_number in PDF
+     • /invoices route - Query bill_number
+     • / route - Show bill_number in dashboard
+
+   ✎ templates/success.html
+     • Display bill number after invoice creation
+
+   ✎ templates/invoices.html
+     • Show bill number in invoice history table
+
+   ✎ templates/index.html
+     • Show bill number in dashboard recent bills
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 HOW TO USE:
+
+   1. Backup your invoice.db file
+   2. Update the Flask app with new app.py
+   3. Update templates folder
+   4. Restart application
+   5. Done! Changes apply automatically
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 ENVIRONMENT VARIABLES (Optional):
+
+   Set SMS API key for OTP delivery:
+   FAST2SMS_API_KEY=your_api_key_here
+   
+   Without this, OTP prints to console (demo mode)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 BEFORE vs AFTER:
+
+   BEFORE:
+   ├─ User 1: Invoice #1, #2, #3
+   ├─ User 2: Invoice #1, #2, #3  ← DUPLICATE NUMBERS!
+   ├─ Forgot Password: No OTP sent
+   └─ PDF: Shows "Invoice No: 1"
+
+   AFTER:
+   ├─ User 1: INV-20250521-001-0001, INV-20250521-001-0002
+   ├─ User 2: INV-20250521-002-0001, INV-20250521-002-0002  ← UNIQUE!
+   ├─ Forgot Password: OTP sent to phone number
+   └─ PDF: Shows "Bill No: INV-20250521-001-0001"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ FAQ:
+
+Q: Will old invoices still work?
+A: Yes! They'll show fallback number "INV-{id}" until regenerated
+
+Q: How do I enable SMS sending?
+A: Set FAST2SMS_API_KEY environment variable with your API key
+
+Q: Can I customize bill number format?
+A: Yes! Edit generate_bill_number() function in app.py
+
+Q: What if I need to reset OTP?
+A: User can click "Resend OTP" button on forgot password page
+
+Q: Is OTP secure?
+A: Yes! Hashed with SHA256, attempt limiting, expiry timer
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For detailed documentation, see: FIXES_SUMMARY.md

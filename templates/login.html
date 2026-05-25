@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Invoice App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <style>
+        body.page-login {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        h2 { text-align: center; margin-top: 0; color: #1b5e20; }
+        label { display: block; font-size: 13px; margin: 10px 0 4px; color: #444; }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 14px;
+            background: #2E7D32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        button:hover { background: #1b5e20; }
+        .error { color: #c62828; text-align: center; font-size: 14px; }
+        .info { color: #2e7d32; text-align: center; font-size: 14px; }
+        .link { text-align: center; margin-top: 12px; font-size: 14px; }
+        .link a { color: #2E7D32; }
+        .forgot { text-align: right; margin-top: 4px; }
+        .forgot a { color: #e65100; font-size: 13px; }
+    </style>
+</head>
+<body class="page-login">
+
+<div class="login-box">
+    <h2>Login</h2>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if info %}
+    <p class="info">{{ info }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label for="u">Username</label>
+        <input type="text" id="u" name="u" placeholder="Username" required>
+
+        <label for="p">Password</label>
+        <input type="password" id="p" name="p" placeholder="Password" required>
+
+        <div class="forgot">
+            <a href="{{ url_for('forgot_password') }}">Forgot password?</a>
+        </div>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <div class="link">
+        <a href="{{ url_for('register') }}">Create Account</a>
+    </div>
+</div>
+
+</body>
+</html>

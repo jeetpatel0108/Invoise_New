@@ -1,0 +1,67 @@
+import os
+from moviepy.editor import ImageClip, VideoFileClip, concatenate_videoclips
+
+def create_festival_video():
+    # 1. Define your assets in the exact order you want them to appear
+    # For images, we specify how many seconds they should stay on screen
+    assets = [
+        {"type": "image", "name": "41765.jpg", "duration": 3},
+        {"type": "video", "name": "41768.mp4"},
+        {"type": "image", "name": "41772.jpg", "duration": 3},
+        {"type": "video", "name": "41761.mp4"},
+        {"type": "image", "name": "41775.jpg", "duration": 3},
+        {"type": "image", "name": "41755.jpg", "duration": 3},
+        {"type": "image", "name": "41758.jpg", "duration": 3}
+    ]
+    
+    clips = []
+    
+    print("Processing assets...")
+    for asset in assets:
+        file_path = asset["name"]
+        
+        # Check if the file actually exists in the directory
+        if not os.path.exists(file_path):
+            print(f"Warning: File {file_path} not found. Skipping.")
+            continue
+            
+        if asset["type"] == "image":
+            # Convert static image to a video clip with a set duration
+            clip = ImageClip(file_path).set_duration(asset["duration"])
+            # Optional: crossfadein makes transitions smoother
+            clip = clip.crossfadein(0.5) 
+            clips.append(clip)
+            
+        elif asset["type"] == "video":
+            # Load the video file
+            clip = VideoFileClip(file_path)
+            clips.append(clip)
+
+    if not clips:
+        print("No valid clips were loaded. Exiting.")
+        return
+
+    print("Stitching clips together...")
+    # 2. Concatenate all clips into one video
+    # method="compose" ensures clips of different sizes/resolutions scale nicely
+    final_video = concatenate_videoclips(clips, method="compose")
+    
+    # 3. Export the final video file
+    output_filename = "festival_lights_compiled.mp4"
+    print(f"Rendering final video to {output_filename}...")
+    
+    final_video.write_videofile(
+        output_filename, 
+        fps=24, 
+        codec="libx264", 
+        audio_codec="aac"
+    )
+    
+    # Close clips to free up system memory
+    for clip in clips:
+        clip.close()
+    final_video.close()
+    print("Video generation complete!")
+
+if __name__ == "__main__":
+    create_festival_video()
